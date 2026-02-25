@@ -19,13 +19,14 @@
 
 ### ☁️ PRODUCTION-GRADE AWS CLOUD ARCHITECTURE ☁️
 
-**`AWS`** × **`VPC`** × **`EC2`** × **`RDS`** × **`ALB`** × **`AUTOSCALING`**
+**`AWS`** × **`TERRAFORM`** × **`VPC`** × **`EC2`** × **`RDS`** × **`ALB`**
 
-*Highly available, scalable, and secure three-tier web application infrastructure following AWS Well-Architected Framework best practices*
+*Highly available, scalable, and secure three-tier web application infrastructure following AWS Well-Architected Framework best practices. Deployable via Terraform IaC.*
 
 ---
 
 ![AWS](https://img.shields.io/badge/AWS-Cloud_Architecture-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Terraform](https://img.shields.io/badge/TERRAFORM-IaC-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
 ![VPC](https://img.shields.io/badge/VPC-Network_Layer-0066FF?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![High Availability](https://img.shields.io/badge/HA-Multi_AZ-00C853?style=for-the-badge)
 
@@ -42,6 +43,7 @@
 ```yaml
 architecture_pattern: "Three-Tier Web Application"
 deployment_model: "Multi-AZ for High Availability"
+infrastructure_as_code: "Terraform (HCL)"
 scaling_strategy: "Auto Scaling with Load Balancing"
 security_model: "Defense in Depth with Security Groups"
 availability: "99.99% SLA Target"
@@ -446,11 +448,501 @@ IAM Permissions:
   
 Tools Required:
   - AWS CLI configured
+  - Terraform >= 1.0
   - SSH key pair created
   - Domain registered (optional)
 ```
 
-### Step-by-Step Deployment
+### Deployment Options
+
+**Option 1: Terraform (Recommended)**  
+**Option 2: AWS CLI (Manual)**
+
+---
+
+## 🔧 `TERRAFORM_DEPLOYMENT`
+
+### Project Structure
+
+```
+aws-three-tier-infrastructure/
+├── main.tf                 # Root module
+├── variables.tf            # Input variables
+├── outputs.tf              # Output values
+├── terraform.tfvars        # Variable values
+├── providers.tf            # AWS provider config
+├── versions.tf             # Terraform version
+├── modules/
+│   ├── network/
+│   │   ├── main.tf        # VPC, Subnets, IGW, NAT
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── security/
+│   │   ├── main.tf        # Security Groups
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── compute/
+│   │   ├── main.tf        # EC2, ASG, Launch Templates
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── loadbalancer/
+│   │   ├── main.tf        # ALB, Target Groups
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── database/
+│       ├── main.tf        # RDS Multi-AZ
+│       ├── variables.tf
+│       └── outputs.tf
+└── README.md
+```
+
+### Terraform Configuration Examples
+
+**providers.tf**
+```hcl
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+  
+  backend "s3" {
+    bucket         = "terraform-state-bucket"
+    key            = "three-tier-infra/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-locks"
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+  
+  default_tags {
+    tags = {
+      Project     = "Three-Tier-Infrastructure"
+      ManagedBy   = "Terraform"
+      Environment = var.environment
+    }
+  }
+}
+```
+
+**main.tf**
+```hcl
+module "network" {
+  source = "./modules/network"
+  
+  vpc_cidr             = var.vpc_cidr
+  availability_zones   = var.availability_zones
+  public_subnet_cidrs  = var.public_subnet_cidrs
+  private_subnet_cidrs = var.private_subnet_cidrs
+  db_subnet_cidrs      = var.db_subnet_cidrs
+  environment          = var.environment
+}
+
+module "security" {
+  source = "./modules/security"
+  
+  vpc_id      = module.network.vpc_id
+  environment = var.environment
+}
+
+module "loadbalancer" {
+  source = "./modules/loadbalancer"
+  
+  vpc_id              = module.network.vpc_id
+  public_subnets      = module.network.public_subnet_ids
+  private_subnets     = module.network.private_subnet_ids
+  web_tier_sg_id      = module.security.web_tier_sg_id
+  app_tier_sg_id      = module.security.app_tier_sg_id
+  environment         = var.environment
+}
+
+module "compute" {
+  source = "./modules/compute"
+  
+  vpc_id                  = module.network.vpc_id
+  public_subnets          = module.network.public_subnet_ids
+  private_subnets         = module.network.private_subnet_ids
+  web_server_sg_id        = module.security.web_server_sg_id
+  app_server_sg_id        = module.security.app_server_sg_id
+  web_tier_target_group   = module.loadbalancer.web_tier_tg_arn
+  app_tier_target_group   = module.loadbalancer.app_tier_tg_arn
+  key_name                = var.key_name
+  environment             = var.environment
+}
+
+module "database" {
+  source = "./modules/database"
+  
+  vpc_id              = module.network.vpc_id
+  db_subnets          = module.network.db_subnet_ids
+  db_security_group   = module.security.db_sg_id
+  db_name             = var.db_name
+  db_username         = var.db_username
+  db_password         = var.db_password
+  environment         = var.environment
+}
+```
+
+**variables.tf**
+```hcl
+variable "aws_region" {
+  description = "AWS region for resources"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "production"
+}
+
+variable "vpc_cidr" {
+  description = "CIDR block for VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "availability_zones" {
+  description = "List of availability zones"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
+}
+
+variable "public_subnet_cidrs" {
+  description = "CIDR blocks for public subnets"
+  type        = list(string)
+  default     = ["10.0.0.0/24", "10.0.1.0/24"]
+}
+
+variable "private_subnet_cidrs" {
+  description = "CIDR blocks for app tier subnets"
+  type        = list(string)
+  default     = ["10.0.2.0/24", "10.0.3.0/24"]
+}
+
+variable "db_subnet_cidrs" {
+  description = "CIDR blocks for database subnets"
+  type        = list(string)
+  default     = ["10.0.4.0/24", "10.0.5.0/24"]
+}
+
+variable "key_name" {
+  description = "SSH key pair name"
+  type        = string
+}
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+  default     = "appdb"
+}
+
+variable "db_username" {
+  description = "Database master username"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "Database master password"
+  type        = string
+  sensitive   = true
+}
+```
+
+**outputs.tf**
+```hcl
+output "vpc_id" {
+  description = "VPC ID"
+  value       = module.network.vpc_id
+}
+
+output "web_tier_alb_dns" {
+  description = "Web tier load balancer DNS name"
+  value       = module.loadbalancer.web_tier_alb_dns
+}
+
+output "app_tier_alb_dns" {
+  description = "App tier load balancer DNS name"
+  value       = module.loadbalancer.app_tier_alb_dns
+}
+
+output "rds_endpoint" {
+  description = "RDS database endpoint"
+  value       = module.database.rds_endpoint
+  sensitive   = true
+}
+
+output "bastion_public_ip" {
+  description = "Bastion host public IP"
+  value       = module.compute.bastion_public_ip
+}
+```
+
+### Network Module Example (modules/network/main.tf)
+
+```hcl
+# VPC
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+  
+  tags = {
+    Name = "${var.environment}-vpc"
+  }
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+  
+  tags = {
+    Name = "${var.environment}-igw"
+  }
+}
+
+# Public Subnets
+resource "aws_subnet" "public" {
+  count = length(var.public_subnet_cidrs)
+  
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidrs[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = true
+  
+  tags = {
+    Name = "${var.environment}-public-subnet-${count.index + 1}"
+    Tier = "public"
+  }
+}
+
+# Private Subnets (App Tier)
+resource "aws_subnet" "private" {
+  count = length(var.private_subnet_cidrs)
+  
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
+  
+  tags = {
+    Name = "${var.environment}-private-subnet-${count.index + 1}"
+    Tier = "application"
+  }
+}
+
+# Database Subnets
+resource "aws_subnet" "database" {
+  count = length(var.db_subnet_cidrs)
+  
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.db_subnet_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
+  
+  tags = {
+    Name = "${var.environment}-db-subnet-${count.index + 1}"
+    Tier = "database"
+  }
+}
+
+# Elastic IPs for NAT Gateways
+resource "aws_eip" "nat" {
+  count  = length(var.availability_zones)
+  domain = "vpc"
+  
+  tags = {
+    Name = "${var.environment}-nat-eip-${count.index + 1}"
+  }
+}
+
+# NAT Gateways
+resource "aws_nat_gateway" "main" {
+  count = length(var.availability_zones)
+  
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+  
+  tags = {
+    Name = "${var.environment}-nat-gateway-${count.index + 1}"
+  }
+  
+  depends_on = [aws_internet_gateway.main]
+}
+
+# Public Route Table
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+  
+  tags = {
+    Name = "${var.environment}-public-rt"
+  }
+}
+
+# Private Route Tables (one per AZ)
+resource "aws_route_table" "private" {
+  count  = length(var.availability_zones)
+  vpc_id = aws_vpc.main.id
+  
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main[count.index].id
+  }
+  
+  tags = {
+    Name = "${var.environment}-private-rt-${count.index + 1}"
+  }
+}
+
+# Database Route Table (no internet access)
+resource "aws_route_table" "database" {
+  vpc_id = aws_vpc.main.id
+  
+  tags = {
+    Name = "${var.environment}-db-rt"
+  }
+}
+
+# Route Table Associations
+resource "aws_route_table_association" "public" {
+  count = length(aws_subnet.public)
+  
+  subnet_id      = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private" {
+  count = length(aws_subnet.private)
+  
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
+}
+
+resource "aws_route_table_association" "database" {
+  count = length(aws_subnet.database)
+  
+  subnet_id      = aws_subnet.database[count.index].id
+  route_table_id = aws_route_table.database.id
+}
+```
+
+### RDS Module Example (modules/database/main.tf)
+
+```hcl
+# DB Subnet Group
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.environment}-db-subnet-group"
+  subnet_ids = var.db_subnets
+  
+  tags = {
+    Name = "${var.environment}-db-subnet-group"
+  }
+}
+
+# RDS Instance (Multi-AZ)
+resource "aws_db_instance" "main" {
+  identifier     = "${var.environment}-mysql-db"
+  engine         = "mysql"
+  engine_version = "8.0"
+  
+  instance_class    = "db.t3.medium"
+  allocated_storage = 100
+  storage_type      = "gp3"
+  storage_encrypted = true
+  
+  db_name  = var.db_name
+  username = var.db_username
+  password = var.db_password
+  
+  multi_az               = true
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [var.db_security_group]
+  
+  backup_retention_period = 7
+  backup_window          = "03:00-04:00"
+  maintenance_window     = "sun:04:00-sun:05:00"
+  
+  skip_final_snapshot = false
+  final_snapshot_identifier = "${var.environment}-mysql-final-snapshot"
+  
+  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
+  
+  tags = {
+    Name = "${var.environment}-mysql-db"
+  }
+}
+```
+
+### Terraform Deployment Commands
+
+```bash
+# 1. Initialize Terraform
+terraform init
+
+# 2. Validate configuration
+terraform validate
+
+# 3. Format code
+terraform fmt -recursive
+
+# 4. Plan deployment (review changes)
+terraform plan -out=tfplan
+
+# 5. Apply infrastructure
+terraform apply tfplan
+
+# 6. View outputs
+terraform output
+
+# 7. Destroy infrastructure (when needed)
+terraform destroy
+```
+
+### Terraform Best Practices Used
+
+```yaml
+State Management:
+  - Remote state in S3
+  - State locking with DynamoDB
+  - Encrypted state files
+
+Code Organization:
+  - Modular structure
+  - Reusable modules
+  - Separated concerns (network, compute, db)
+
+Security:
+  - Sensitive variables marked
+  - No hardcoded credentials
+  - Encrypted resources
+
+Tagging Strategy:
+  - Consistent naming
+  - Environment tags
+  - Cost allocation tags
+  - ManagedBy: Terraform
+
+Version Control:
+  - Provider version pinning
+  - Terraform version requirements
+  - Lock file committed
+```
+
+---
+
+## 🖥️ `AWS_CLI_DEPLOYMENT`
 
 **1. Network Layer Setup**
 ```bash
@@ -618,13 +1110,14 @@ Optimization Strategies:
 
 Demonstrates expertise in:
 
+- **Infrastructure as Code**: Terraform modules, state management
 - **AWS Networking**: VPC design, subnets, routing, NAT, IGW
 - **High Availability**: Multi-AZ deployment, fault tolerance
 - **Security**: Defense in depth, security groups, network ACLs
 - **Auto Scaling**: Dynamic capacity based on demand
 - **Load Balancing**: Traffic distribution, health checks
 - **Database Management**: RDS Multi-AZ, automated backups
-- **Infrastructure as Code**: Repeatable deployments
+- **Modular Architecture**: Reusable Terraform modules
 - **Monitoring**: CloudWatch metrics, alarms, logging
 - **Cost Management**: Resource optimization strategies
 
@@ -672,7 +1165,7 @@ Specializing in AWS cloud infrastructure, high availability systems, and scalabl
 
 ### `TECH_FINGERPRINT`
 
-`AWS` • `VPC` • `EC2` • `RDS` • `ALB` • `AUTO_SCALING` • `MULTI_AZ` • `HIGH_AVAILABILITY`
+`AWS` • `TERRAFORM` • `VPC` • `EC2` • `RDS` • `ALB` • `AUTO_SCALING` • `MULTI_AZ` • `IaC`
 
 ---
 
