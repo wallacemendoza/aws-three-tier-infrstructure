@@ -1,0 +1,204 @@
+random_id.bucket_suffix: Refreshing state... [id=e-MdfQ]
+aws_s3_bucket.static_assets: Refreshing state... [id=three-tier-app-dev-static-assets-7be31d7d]
+module.networking.aws_vpc.main: Refreshing state... [id=vpc-02e7e88f6fc3c69b9]
+aws_s3_bucket_public_access_block.static_assets: Refreshing state... [id=three-tier-app-dev-static-assets-7be31d7d]
+aws_s3_bucket_versioning.static_assets: Refreshing state... [id=three-tier-app-dev-static-assets-7be31d7d]
+aws_s3_bucket_server_side_encryption_configuration.static_assets: Refreshing state... [id=three-tier-app-dev-static-assets-7be31d7d]
+aws_s3_bucket_lifecycle_configuration.static_assets: Refreshing state... [id=three-tier-app-dev-static-assets-7be31d7d]
+module.networking.aws_route_table.private_db: Refreshing state... [id=rtb-04131f8652fc12665]
+module.networking.aws_subnet.private_app[0]: Refreshing state... [id=subnet-07f1fbdaf07162bd1]
+module.networking.aws_subnet.private_db[0]: Refreshing state... [id=subnet-007518e6dcf5f7d39]
+module.networking.aws_subnet.private_app[1]: Refreshing state... [id=subnet-007b91e25020da577]
+module.networking.aws_subnet.public[1]: Refreshing state... [id=subnet-067d9731124c3792b]
+module.networking.aws_subnet.public[0]: Refreshing state... [id=subnet-0dcfb88ca61bd33bb]
+module.networking.aws_subnet.private_db[1]: Refreshing state... [id=subnet-03052bf7e3b561bc2]
+module.compute.aws_lb_target_group.app: Refreshing state... [id=arn:aws:elasticloadbalancing:us-east-1:347874331243:targetgroup/three-tier-app-dev-app-tg/da9b0e647ec6d4a8]
+module.networking.aws_internet_gateway.main: Refreshing state... [id=igw-0a36f767b4afe9ad9]
+module.compute.aws_security_group.alb: Refreshing state... [id=sg-09d11731cd1d24c99]
+module.networking.aws_route_table.public: Refreshing state... [id=rtb-01db8f53f3c6c6bb9]
+module.networking.aws_eip.nat[1]: Refreshing state... [id=eipalloc-0b2e3ff56f371e8e5]
+module.networking.aws_eip.nat[0]: Refreshing state... [id=eipalloc-0e118d2e6d7c27817]
+module.networking.aws_route_table_association.private_db[0]: Refreshing state... [id=rtbassoc-0070c8d2a7d6da57a]
+module.networking.aws_route_table_association.private_db[1]: Refreshing state... [id=rtbassoc-09c0c688dc6367a7a]
+module.database.aws_db_subnet_group.main: Refreshing state... [id=three-tier-app-dev-db-subnet-group]
+module.networking.aws_route_table_association.public[0]: Refreshing state... [id=rtbassoc-02c9276eb6e7e47e6]
+module.networking.aws_route_table_association.public[1]: Refreshing state... [id=rtbassoc-0ccc14172b8eb23a0]
+module.compute.aws_security_group.app: Refreshing state... [id=sg-09a5e9baef8c4e341]
+module.compute.aws_lb.main: Refreshing state... [id=arn:aws:elasticloadbalancing:us-east-1:347874331243:loadbalancer/app/three-tier-app-dev-alb/4dd710b9113808b2]
+module.database.aws_security_group.db: Refreshing state... [id=sg-0f7c63cf702c4ff06]
+module.compute.aws_launch_template.app: Refreshing state... [id=lt-0da2daa26874008f6]
+module.networking.aws_nat_gateway.main[0]: Refreshing state... [id=nat-0d92013c16d4f3b56]
+module.networking.aws_nat_gateway.main[1]: Refreshing state... [id=nat-0da95dd98a0035065]
+module.networking.aws_route_table.private_app[1]: Refreshing state... [id=rtb-0670b26cda9917f37]
+module.networking.aws_route_table.private_app[0]: Refreshing state... [id=rtb-08062e4e813c9a145]
+module.compute.aws_lb_listener.http: Refreshing state... [id=arn:aws:elasticloadbalancing:us-east-1:347874331243:listener/app/three-tier-app-dev-alb/4dd710b9113808b2/ec318dea6ed60466]
+module.compute.aws_autoscaling_group.app: Refreshing state... [id=three-tier-app-dev-asg]
+module.networking.aws_route_table_association.private_app[1]: Refreshing state... [id=rtbassoc-00cfbf450208aef5d]
+module.networking.aws_route_table_association.private_app[0]: Refreshing state... [id=rtbassoc-0c12efee572f894e9]
+module.compute.aws_autoscaling_policy.scale_out: Refreshing state... [id=three-tier-app-dev-scale-out]
+module.compute.aws_autoscaling_policy.scale_in: Refreshing state... [id=three-tier-app-dev-scale-in]
+module.compute.aws_cloudwatch_metric_alarm.cpu_low: Refreshing state... [id=three-tier-app-dev-cpu-low]
+module.compute.aws_cloudwatch_metric_alarm.cpu_high: Refreshing state... [id=three-tier-app-dev-cpu-high]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.database.aws_db_instance.main will be created
+  + resource "aws_db_instance" "main" {
+      + address                               = (known after apply)
+      + allocated_storage                     = 20
+      + apply_immediately                     = false
+      + arn                                   = (known after apply)
+      + auto_minor_version_upgrade            = true
+      + availability_zone                     = (known after apply)
+      + backup_retention_period               = 7
+      + backup_target                         = (known after apply)
+      + backup_window                         = "03:00-04:00"
+      + ca_cert_identifier                    = (known after apply)
+      + character_set_name                    = (known after apply)
+      + copy_tags_to_snapshot                 = false
+      + database_insights_mode                = (known after apply)
+      + db_name                               = "appdb"
+      + db_subnet_group_name                  = "three-tier-app-dev-db-subnet-group"
+      + dedicated_log_volume                  = false
+      + delete_automated_backups              = true
+      + deletion_protection                   = false
+      + domain_fqdn                           = (known after apply)
+      + endpoint                              = (known after apply)
+      + engine                                = "mysql"
+      + engine_lifecycle_support              = (known after apply)
+      + engine_version                        = "8.0"
+      + engine_version_actual                 = (known after apply)
+      + final_snapshot_identifier             = "three-tier-app-dev-mysql-final-snapshot"
+      + hosted_zone_id                        = (known after apply)
+      + id                                    = (known after apply)
+      + identifier                            = "three-tier-app-dev-mysql"
+      + identifier_prefix                     = (known after apply)
+      + instance_class                        = "db.t3.micro"
+      + iops                                  = (known after apply)
+      + kms_key_id                            = (known after apply)
+      + latest_restorable_time                = (known after apply)
+      + license_model                         = (known after apply)
+      + listener_endpoint                     = (known after apply)
+      + maintenance_window                    = "mon:04:00-mon:05:00"
+      + master_user_secret                    = (known after apply)
+      + master_user_secret_kms_key_id         = (known after apply)
+      + max_allocated_storage                 = 40
+      + monitoring_interval                   = 0
+      + monitoring_role_arn                   = (known after apply)
+      + multi_az                              = false
+      + nchar_character_set_name              = (known after apply)
+      + network_type                          = (known after apply)
+      + option_group_name                     = (known after apply)
+      + parameter_group_name                  = (known after apply)
+      + password                              = (sensitive value)
+      + password_wo                           = (write-only attribute)
+      + performance_insights_enabled          = false
+      + performance_insights_kms_key_id       = (known after apply)
+      + performance_insights_retention_period = (known after apply)
+      + port                                  = (known after apply)
+      + publicly_accessible                   = false
+      + replica_mode                          = (known after apply)
+      + replicas                              = (known after apply)
+      + resource_id                           = (known after apply)
+      + skip_final_snapshot                   = true
+      + snapshot_identifier                   = (known after apply)
+      + status                                = (known after apply)
+      + storage_encrypted                     = true
+      + storage_throughput                    = (known after apply)
+      + storage_type                          = "gp3"
+      + tags                                  = {
+          + "Name" = "three-tier-app-dev-mysql"
+        }
+      + tags_all                              = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "three-tier-app-dev-mysql"
+          + "Owner"       = "platform-team"
+          + "Project"     = "three-tier-app"
+        }
+      + timezone                              = (known after apply)
+      + username                              = (sensitive value)
+      + vpc_security_group_ids                = [
+          + "sg-0f7c63cf702c4ff06",
+        ]
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + db_endpoint            = (known after apply)
+  + db_port                = (known after apply)
+module.database.aws_db_instance.main: Creating...
+module.database.aws_db_instance.main: Still creating... [00m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [00m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [00m30s elapsed]
+module.database.aws_db_instance.main: Still creating... [00m40s elapsed]
+module.database.aws_db_instance.main: Still creating... [00m50s elapsed]
+module.database.aws_db_instance.main: Still creating... [01m00s elapsed]
+module.database.aws_db_instance.main: Still creating... [01m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [01m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [01m30s elapsed]
+module.database.aws_db_instance.main: Still creating... [01m40s elapsed]
+module.database.aws_db_instance.main: Still creating... [01m50s elapsed]
+module.database.aws_db_instance.main: Still creating... [02m00s elapsed]
+module.database.aws_db_instance.main: Still creating... [02m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [02m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [02m30s elapsed]
+module.database.aws_db_instance.main: Still creating... [02m40s elapsed]
+module.database.aws_db_instance.main: Still creating... [02m50s elapsed]
+module.database.aws_db_instance.main: Still creating... [03m00s elapsed]
+module.database.aws_db_instance.main: Still creating... [03m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [03m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [03m30s elapsed]
+module.database.aws_db_instance.main: Still creating... [03m40s elapsed]
+module.database.aws_db_instance.main: Still creating... [03m50s elapsed]
+module.database.aws_db_instance.main: Still creating... [04m00s elapsed]
+module.database.aws_db_instance.main: Still creating... [04m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [04m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [04m30s elapsed]
+module.database.aws_db_instance.main: Still creating... [04m40s elapsed]
+module.database.aws_db_instance.main: Still creating... [04m50s elapsed]
+module.database.aws_db_instance.main: Still creating... [05m00s elapsed]
+module.database.aws_db_instance.main: Still creating... [05m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [05m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [05m30s elapsed]
+module.database.aws_db_instance.main: Still creating... [05m40s elapsed]
+module.database.aws_db_instance.main: Still creating... [05m50s elapsed]
+module.database.aws_db_instance.main: Still creating... [06m00s elapsed]
+module.database.aws_db_instance.main: Still creating... [06m10s elapsed]
+module.database.aws_db_instance.main: Still creating... [06m20s elapsed]
+module.database.aws_db_instance.main: Still creating... [06m30s elapsed]
+module.database.aws_db_instance.main: Creation complete after 6m31s [id=db-CTZPZZLK5OBLH75R4P555XKJ5Y]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+alb_dns_name = "three-tier-app-dev-alb-663855495.us-east-1.elb.amazonaws.com"
+alb_security_group_id = "sg-09d11731cd1d24c99"
+alb_zone_id = "Z35SXDOTRQ7X7K"
+app_security_group_id = "sg-09a5e9baef8c4e341"
+asg_name = "three-tier-app-dev-asg"
+db_endpoint = "three-tier-app-dev-mysql.caf0muqcg3wy.us-east-1.rds.amazonaws.com:3306"
+db_name = "appdb"
+db_port = 3306
+db_security_group_id = "sg-0f7c63cf702c4ff06"
+private_app_subnet_ids = [
+  "subnet-07f1fbdaf07162bd1",
+  "subnet-007b91e25020da577",
+]
+private_db_subnet_ids = [
+  "subnet-007518e6dcf5f7d39",
+  "subnet-03052bf7e3b561bc2",
+]
+public_subnet_ids = [
+  "subnet-0dcfb88ca61bd33bb",
+  "subnet-067d9731124c3792b",
+]
+s3_bucket_arn = "arn:aws:s3:::three-tier-app-dev-static-assets-7be31d7d"
+s3_bucket_name = "three-tier-app-dev-static-assets-7be31d7d"
+vpc_id = "vpc-02e7e88f6fc3c69b9"
